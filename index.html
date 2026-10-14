@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TalentBridge - Login with Validation</title>
+<style>
+  body { font-family: Arial, Helvetica, sans-serif; background: #eaeef7; margin: 0; padding: 50px 12px; color: #1c2541; }
+  .card { width: 420px; max-width: 100%; margin: 0 auto; background: #ffffff; border: 1px solid #d5dbe8; border-radius: 10px; }
+  .brand { background: #1c2541; color: #ffffff; padding: 22px 30px; border-radius: 10px 10px 0 0; }
+  .brand h1 { margin: 0; font-size: 22px; }
+  .brand p { margin: 4px 0 0 0; font-size: 12px; letter-spacing: 1px; color: #7fe0cd; }
+  form { padding: 24px 30px 30px 30px; }
+  h2 { margin: 0 0 4px 0; font-size: 20px; }
+  .sub { margin: 0 0 14px 0; font-size: 13px; color: #667; }
+  label { display: block; font-weight: bold; font-size: 14px; margin: 14px 0 5px 0; }
+  .req { color: #c0392b; }
+  .pwrow { position: relative; }
+  input[type="text"], input[type="password"] { width: 100%; box-sizing: border-box; padding: 10px; font-size: 14px; border: 1px solid #b9c2d6; border-radius: 6px; }
+  input.bad { border-color: #c0392b; background: #fdecea; }
+  input.good { border-color: #1b7f4b; background: #eefaf2; }
+  .toggle { position: absolute; right: 6px; top: 6px; padding: 4px 10px; font-size: 12px; background: #ffffff; color: #0e7c6b; border: 1px solid #0e7c6b; border-radius: 5px; cursor: pointer; }
+  .msg { color: #c0392b; font-size: 12px; margin-top: 4px; min-height: 14px; }
+  .login-btn { width: 100%; margin-top: 20px; padding: 12px; font-size: 15px; font-weight: bold; color: #ffffff; background: #0e7c6b; border: 0; border-radius: 6px; cursor: pointer; }
+  .success { display: none; margin-top: 16px; padding: 12px; background: #e3f6ea; border: 1px solid #1b7f4b; color: #14532d; border-radius: 6px; font-size: 14px; }
+  .note { margin-top: 14px; font-size: 12px; color: #667; text-align: center; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="brand">
+    <h1>TalentBridge Solutions</h1>
+    <p>RECRUITMENT PORTAL</p>
+  </div>
+  <form id="loginForm" novalidate>
+    <h2>Welcome back</h2>
+    <p class="sub">Sign in to register a job vacancy.</p>
+
+    <label for="username">Username (Register / D.No) <span class="req">*</span></label>
+    <input type="text" id="username" placeholder="e.g. 24CSU123" maxlength="30">
+    <div class="msg" id="userMsg"></div>
+
+    <label for="password">Password (Date of birth) <span class="req">*</span></label>
+    <div class="pwrow">
+      <input type="password" id="password" placeholder="DD-MM-YYYY" maxlength="10">
+      <button type="button" class="toggle" id="toggleBtn">Show</button>
+    </div>
+    <div class="msg" id="passMsg"></div>
+
+    <button type="submit" class="login-btn" id="loginBtn">Log in</button>
+    <div class="success" id="okBox">Login successful! Welcome to the TalentBridge portal.</div>
+    <div class="note">Enter your register number and date of birth to continue.</div>
+  </form>
+</div>
+
+<script>
+  var form = document.getElementById("loginForm");
+  var user = document.getElementById("username");
+  var pass = document.getElementById("password");
+  var userMsg = document.getElementById("userMsg");
+  var passMsg = document.getElementById("passMsg");
+  var okBox = document.getElementById("okBox");
+  var toggleBtn = document.getElementById("toggleBtn");
+
+  // Username: required, 4 to 30 characters, letters and digits only
+  function checkUsername() {
+    var v = user.value.replace(/^\s+|\s+$/g, "");
+    var msg = "";
+    if (v === "") { msg = "Username is required."; }
+    else if (v.length < 4 || v.length > 30) { msg = "Username must be 4 to 30 characters."; }
+    else if (!/^[A-Za-z0-9]+$/.test(v)) { msg = "Use only letters and digits."; }
+    show(user, userMsg, msg);
+    return msg === "";
+  }
+
+  // Password: DD-MM-YYYY, must be a real calendar date and not in the future
+  function checkPassword() {
+    var v = pass.value;
+    var msg = "";
+    if (v === "") { msg = "Date of birth is required."; }
+    else if (!/^[0-3][0-9]-[0-1][0-9]-[0-9]{4}$/.test(v)) { msg = "Enter the date as DD-MM-YYYY, e.g. 15-08-2005."; }
+    else {
+      var d = parseInt(v.substr(0, 2), 10), m = parseInt(v.substr(3, 2), 10), y = parseInt(v.substr(6, 4), 10);
+      var dt = new Date(y, m - 1, d);
+      if (dt.getFullYear() !== y || dt.getMonth() !== m - 1 || dt.getDate() !== d) { msg = "This is not a valid date."; }
+      else if (dt > new Date()) { msg = "Date of birth cannot be in the future."; }
+    }
+    show(pass, passMsg, msg);
+    return msg === "";
+  }
+
+  function show(input, box, msg) {
+    box.innerHTML = msg;
+    input.className = msg === "" ? "good" : "bad";
+  }
+
+  user.addEventListener("input", function () { okBox.style.display = "none"; checkUsername(); });
+  pass.addEventListener("input", function () { okBox.style.display = "none"; checkPassword(); });
+
+  toggleBtn.addEventListener("click", function () {
+    var hidden = pass.type === "password";
+    pass.type = hidden ? "text" : "password";
+    toggleBtn.innerHTML = hidden ? "Hide" : "Show";
+  });
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var a = checkUsername();
+    var b = checkPassword();
+    if (a && b) { okBox.style.display = "block"; }
+    else { okBox.style.display = "none"; (a ? pass : user).focus(); }
+  });
+</script>
+</body>
+</html>
